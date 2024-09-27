@@ -1,1 +1,6 @@
+mysql-connector-python
+python-dotenv
+llama-index-core
+llama-parse
+sec-edgar-downloader
 
