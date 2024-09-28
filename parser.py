@@ -1,61 +1,42 @@
 import os
-import mysql.connector
 from tempfile import NamedTemporaryFile
-from mysql.connector import Error
 from dotenv import load_dotenv
 from llama_parse import LlamaParse
 from llama_index.core import SimpleDirectoryReader
+from utils import (
+    create_database_connection,
+    create_column,
+    check_column_exists,
+    decode_blob,
+    encode_blob,
+    update_parsed_text
+)
 
-# Function to create a database connection
-def create_database_connection():
-    try:
-        connection = mysql.connector.connect(
-            host='',
-            database='sec',
-            user='',
-            password=''
-        )
-        return connection if connection.is_connected() else None
-    except Error as e:
-        print(f"Error connecting to MySQL: {e}")
-        return None
 
-# Check if the 'parsed_text' column exists
-def check_column_exists(cursor, column_name: str, table_name: str) -> bool:
-    cursor.execute(f"SHOW COLUMNS FROM {table_name} LIKE '{column_name}';")
-    return cursor.fetchone() is not None
-
-# Alter the table and add parsed_text column if it doesn't exist
-def ensure_parsed_text_column_exists():
+def ensure_parsed_text_column_exists() -> None:
     connection = create_database_connection()
-    if connection is None:
+    if not connection:
         print("Failed to connect to the database.")
         return
 
     try:
         cursor = connection.cursor()
-        # Check if 'parsed_text' column exists
-        if not check_column_exists(cursor, 'parsed_text', 'sec_filings'):
-            alter_table_query = """
-            ALTER TABLE sec_filings 
-            ADD COLUMN parsed_text LONGTEXT;
-            """
-            cursor.execute(alter_table_query)
-            connection.commit()
+        if not check_column_exists(connection, 'parsed_text', 'sec_filings'):
+            create_column('sec_filings', 'parsed_text', 'LONGBLOB')
             print("'parsed_text' column added to sec_filings table.")
         else:
             print("'parsed_text' column already exists.")
-    except Error as e:
+    except Exception as e:
         print(f"Error altering the table: {e}")
     finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+        cursor.close()
+        connection.close()
 
-# Function to retrieve BLOB content, parse it, and save the result as text
+
 def retrieve_and_save_parsed_blob(accession_number: str) -> None:
+    parts_size = 20  # Number of parts to divide the HTML content
     connection = create_database_connection()
-    if connection is None:
+    if not connection:
         print("Failed to connect to the database.")
         return
 
@@ -63,34 +44,65 @@ def retrieve_and_save_parsed_blob(accession_number: str) -> None:
         cursor = connection.cursor()
         cursor.execute("SELECT content FROM sec_filings WHERE accession_number = %s", (accession_number,))
         result = cursor.fetchone()
+
         if result:
-            html_content = result[0].decode('utf-8') if isinstance(result[0], bytes) else result[0]
-            # Create a temporary HTML file
-            with NamedTemporaryFile(delete=False, suffix='.html', mode='w', encoding='utf-8') as temp_file:
-                temp_file.write(html_content)
-                temp_file_path = temp_file.name
-            load_dotenv()
-            #Add LLAMA-PARSE API key
-            api_key = os.getenv('LLAMA_CLOUD_API_KEY', 'llx-')
-            parser = LlamaParse(api_key=api_key, result_type="markdown")
-            documents = SimpleDirectoryReader(input_files=[temp_file_path], file_extractor={".html": parser}).load_data()
-            # Clean up the temporary file
-            os.remove(temp_file_path)
-            parsed_markdown = "\n\n".join(doc.text for doc in documents if hasattr(doc, 'text'))
-            update_query = "UPDATE sec_filings SET parsed_text = %s WHERE accession_number = %s"
-            cursor.execute(update_query, (parsed_markdown, accession_number))
-            connection.commit()
-            print(f"Parsed content saved for accession number: {accession_number}")
+            html_content = decode_blob(result[0]) if result[0] else None
+
+            if html_content:
+                # Divide the HTML content into parts
+                total_lines = html_content.splitlines()
+                lines_per_part = len(total_lines) // parts_size
+                content_parts = [ "\n".join(total_lines[i:i+lines_per_part]) for i in range(0, len(total_lines), lines_per_part) ]
+
+                print(f"Divided HTML content into {len(content_parts)} parts.")
+                
+                # Setup LlamaParse
+                api_key = os.getenv('LLAMA_CLOUD_API_KEY', 'llx-')
+                parser = LlamaParse(api_key=api_key, result_type="markdown", show_progress=True)
+
+                # File to write parsed output
+                output_file_path = os.path.join(os.path.expanduser('~/Desktop'), f"parsed_output_{accession_number}.txt")
+
+                with open(output_file_path, 'w', encoding='utf-8') as output_file:
+                    for index, part_content in enumerate(content_parts):
+                        # Create a temporary HTML file for each part
+                        with NamedTemporaryFile(delete=False, suffix='.html', mode='w', encoding='utf-8') as temp_file:
+                            temp_file.write(part_content)
+                            temp_file_path = temp_file.name
+
+                        print(f"Parsing file part {index + 1} at: {temp_file_path}")
+                        try:
+                            documents = SimpleDirectoryReader(input_files=[temp_file_path], file_extractor={".html": parser}).load_data()
+                            parsed_part = "\n\n".join(doc.text for doc in documents if hasattr(doc, 'text'))
+
+                            # Append the parsed part to the output file
+                            output_file.write(parsed_part + "\n\n")
+                            print(f"Appended parsed part {index + 1} to {output_file_path}")
+                        except Exception as e:
+                            print(f"Error while parsing part {index + 1}: {e}")
+
+                        # Clean up the temporary file
+                        os.remove(temp_file_path)
+
+                # Read the entire parsed file content and save it back to the database as BLOB
+                with open(output_file_path, 'r', encoding='utf-8') as output_file:
+                    parsed_markdown = output_file.read()
+
+                parsed_blob = encode_blob(parsed_markdown)  # Convert parsed content to bytes (BLOB format)
+                update_parsed_text(connection, accession_number, parsed_blob)
+
+                print(f"Parsed content saved as BLOB for accession number: {accession_number}")
+            else:
+                print(f"No content found for accession number {accession_number}.")
         else:
-            print("No content found for the given accession number.")
-    except Error as e:
+            print(f"No filing found for the accession number: {accession_number}.")
+    except Exception as e:
         print(f"Error retrieving or updating the database: {e}")
     finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+        cursor.close()
+        connection.close()
 
-# Example usage
 if __name__ == "__main__":
     ensure_parsed_text_column_exists()
     retrieve_and_save_parsed_blob(accession_number="0000320193-23-000106")
+
