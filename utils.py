@@ -125,3 +125,28 @@ def create_table(table_name: str, columns: Dict[str, str]) -> None:
     columns_with_types = ', '.join([f"{name} {col_type}" for name, col_type in columns.items()])
     create_table_query = f"CREATE TABLE {table_name} ({columns_with_types})"
     execute_query(create_table_query)
+
+def check_column_exists(connection, column_name: str, table_name: str) -> bool:
+    try:
+        cursor = connection.cursor()
+        query = f"SHOW COLUMNS FROM {table_name} LIKE %s"
+        cursor.execute(query, (column_name,))
+        result = cursor.fetchone()
+        return result is not None
+    except Exception as e:
+        print(f"Error checking column existence: {e}")
+        return False
+    finally:
+        cursor.close()
+
+def update_parsed_text(connection, accession_number: str, parsed_blob: bytes) -> None:
+    try:
+        cursor = connection.cursor()
+        query = "UPDATE sec_filings SET parsed_text = %s WHERE accession_number = %s"
+        cursor.execute(query, (parsed_blob, accession_number))
+        connection.commit()
+        print(f"Updated 'parsed_text' for accession number: {accession_number}")
+    except Error as e:
+        print(f"Error updating 'parsed_text' for accession number {accession_number}: {e}")
+    finally:
+        cursor.close()
