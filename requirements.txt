@@ -6,4 +6,4 @@ sec-edgar-downloader
 streamlit
 yfinance
 openai
-
+tiktoken
