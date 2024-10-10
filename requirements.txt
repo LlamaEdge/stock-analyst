@@ -3,4 +3,7 @@ python-dotenv
 llama-index-core
 llama-parse
 sec-edgar-downloader
+streamlit
+yfinance
+openai
 
