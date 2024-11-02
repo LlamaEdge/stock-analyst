@@ -9,10 +9,6 @@ from sec_edgar_downloader._orchestrator import (
 from sec_edgar_downloader._types import DownloadMetadata
 from sec_edgar_downloader._sec_gateway import download_filing
 
-def handle_error(error):
-    print(f"Error: {error}")
-
-
 DB_HOST = 'localhost'
 DB_USER = 'root'
 DB_PASSWORD = ''
@@ -26,7 +22,7 @@ def create_database_if_not_exists():
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
             print(f"Database '{DB_NAME}' created or already exists.")
     except Error as e:
-        handle_error(f"Error creating database: {e}")
+        print(f"Error creating database: {e}")
     finally:
         if 'cursor' in locals() and cursor:
             cursor.close()
@@ -37,10 +33,10 @@ def create_database_connection():
     try:
         connection = mysql.connector.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASSWORD)
         if connection.is_connected():
-            print(f"Connected to MySQL database '{DB_NAME}'")
+            # print(f"Connected to MySQL database '{DB_NAME}'")
         return connection
     except Error as e:
-        handle_error(f"Error connecting to MySQL database '{DB_NAME}': {e}")
+        print(f"Error connecting to MySQL database '{DB_NAME}': {e}")
         return None
 
 def execute_query(query: str, data: tuple = (), connection=None) -> None:
@@ -51,7 +47,7 @@ def execute_query(query: str, data: tuple = (), connection=None) -> None:
             cursor.execute(query, data)
             connection.commit()
     except Error as e:
-        handle_error(f"Error executing query: {e}")
+        print(f"Error executing query: {e}")
 
 def initialize_database():
     create_database_if_not_exists()
@@ -84,7 +80,7 @@ def fetch_ticker_to_cik_mapping(ticker: str) -> Optional[str]:
         cik_mapping = get_ticker_to_cik_mapping("Your Company Name/1.0 (your.email@example.com)")
         return cik_mapping.get(ticker.upper()) if cik_mapping else None
     except Exception as e:
-        handle_error(f"Error fetching CIK for ticker {ticker}: {e}")
+        print(f"Error fetching CIK for ticker {ticker}: {e}")
         return None
 
 def get_filing_text_by_accession_number(accession_number: str, connection) -> Optional[str]:
@@ -96,7 +92,7 @@ def get_filing_text_by_accession_number(accession_number: str, connection) -> Op
                 result = cursor.fetchone()
                 return decode_blob(result[0]) if result else None
         except Error as e:
-            handle_error(f"Error retrieving filing content: {e}")
+            print(f"Error retrieving filing content: {e}")
     return None
 
 def save_filing_text_as_blob(accession_number: str, text_content: str, connection) -> None:
@@ -144,7 +140,7 @@ def custom_fetch_and_save_filings(download_metadata: DownloadMetadata, user_agen
 
                 successfully_downloaded += 1
         except Exception as e:
-            handle_error(f"Error occurred while downloading filing {td.accession_number}: {e}")
+            print(f"Error occurred while downloading filing {td.accession_number}: {e}")
 
     return successfully_downloaded
 
