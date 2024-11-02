@@ -8,7 +8,7 @@ from utils import (
 )
 from widgets import get_tradingview_widget, get_company_news, get_stock_data, get_full_company_data
 
-general_client = openai.OpenAI()
+general_client = openai.OpenAI(base_url="https://llama.us.gaianet.network/v1", api_key="GAIA")
 
 st.set_page_config(
     page_title="Financial Analyst",
