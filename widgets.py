@@ -1,4 +1,8 @@
 import yfinance as yf
+import requests
+from bs4 import BeautifulSoup
+from datetime import datetime
+from typing import Dict, List, Optional
 
 def get_stock_data(ticker: str) -> dict:
     try:
@@ -13,18 +17,40 @@ def get_stock_data(ticker: str) -> dict:
         print(f"Error fetching stock data for {ticker}: {str(e)}")
         return {}
 
+def scrape_article_content(url: str) -> Optional[str]:
+    try:
+        response = requests.get(url)
+        if not response.ok:
+            print(f'Failed to fetch article. Status code: {response.status_code}')
+            return None
+            
+        soup = BeautifulSoup(response.text, "html.parser")
+        paragraphs = soup.find_all("p")
+        article_text = " ".join([paragraph.text.strip() for paragraph in paragraphs])
+        
+        return article_text
+        
+    except Exception as e:
+        print(f"Error scraping article {url}: {e}")
+        return None
+
 def get_company_news(ticker: str) -> list:
     try:
         stock = yf.Ticker(ticker)
         news = stock.news
-        return [
-            {
+        articles = []
+        
+        for article in news[:5]:
+            content = scrape_article_content(article.get("link", "#"))
+            articles.append({
                 "title": article.get("title", "No title"),
                 "publisher": article.get("publisher", "Unknown"),
-                "link": article.get("link", "#")
-            }
-            for article in news[:5]  # Return top 5 news items
-        ]
+                "link": article.get("link", "#"),
+                "content": content if content else "Content not available",
+                "scraped_at": datetime.now().isoformat()
+            })
+                
+        return articles
     except Exception as e:
         print(f"Error fetching news for {ticker}: {str(e)}")
         return []
@@ -58,13 +84,10 @@ def get_tradingview_widget(ticker: str) -> str:
     """
     return widget_html
 
-# Example usage:
-ticker = "AAPL"
-stock_info = get_stock_data(ticker)
-news = get_company_news(ticker)
-tradingview_widget = get_tradingview_widget(ticker)
-
-print(stock_info)
-print(news)
-print(tradingview_widget)
+def get_full_company_data(ticker: str) -> Dict:
+    return {
+        "stock_data": get_stock_data(ticker),
+        "news": get_company_news(ticker),
+        "chart_widget": get_tradingview_widget(ticker)
+    }
 
