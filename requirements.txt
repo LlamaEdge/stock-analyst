@@ -7,3 +7,7 @@ streamlit
 yfinance
 openai
 tiktoken
+requests
+BeautifulSoup
+pandas
+plotly
