@@ -1,6 +1,6 @@
 # LFX-Updates
 
-To use first update the database connection parameter at https://github.com/lazyperson1020/LFX-Updates/blob/main/utils.py after cloning
+To use first update the database connection parameter at https://github.com/lazyperson1020/LFX-Updates/blob/main/utils.py after cloning this repo
 ```
 git clone https://github.com/lazyperson1020/LFX-Updates.git
 cd LFX-Updates
