@@ -1,6 +1,5 @@
 from utils import (
     create_database_connection,
-    handle_error,
     check_column_exists,
     encode_blob,
     decode_blob
@@ -34,11 +33,9 @@ def clean_and_store_filing(accession_number: str) -> bool:
         return False
 
     try:
-        # Check if 'cleaned_text' column exists, create if not
         if not check_column_exists(connection, 'cleaned_text', 'sec_filings'):
             with connection.cursor() as cursor:
                 cursor.execute("ALTER TABLE sec_filings ADD COLUMN cleaned_text LONGBLOB")
-            print("Added 'cleaned_text' column to sec_filings table")
         with connection.cursor() as cursor:
             cursor.execute("SELECT parsed_text FROM sec_filings WHERE accession_number = %s", (accession_number,))
             result = cursor.fetchone()
@@ -53,11 +50,9 @@ def clean_and_store_filing(accession_number: str) -> bool:
             cursor.execute("UPDATE sec_filings SET cleaned_text = %s WHERE accession_number = %s", 
                            (cleaned_content_blob, accession_number))
             connection.commit()
-
-        print(f"Cleaned and stored content for accession number: {accession_number}")
         return True
     except Exception as e:
-        handle_error(f"Error cleaning and storing filing: {e}")
+        print(f"Error cleaning and storing filing: {e}")
         return False
     finally:
         connection.close()
