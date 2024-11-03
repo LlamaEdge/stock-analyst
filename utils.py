@@ -34,7 +34,7 @@ def create_database_connection():
         connection = mysql.connector.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASSWORD)
         if connection.is_connected():
             # print(f"Connected to MySQL database '{DB_NAME}'")
-        return connection
+         return connection
     except Error as e:
         print(f"Error connecting to MySQL database '{DB_NAME}': {e}")
         return None
