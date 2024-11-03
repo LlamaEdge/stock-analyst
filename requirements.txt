@@ -8,6 +8,6 @@ yfinance
 openai
 tiktoken
 requests
-BeautifulSoup
+beautifulsoup4
 pandas
 plotly
