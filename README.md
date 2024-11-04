@@ -6,12 +6,8 @@ git clone https://github.com/lazyperson1020/LFX-Updates.git
 cd LFX-Updates
 pip install -r requirements.txt
 ```
-To view the database manager
+To view the database manager & database manager
 ```
-streamlit run app3.py
-```
-To view the chatbot
-```
-streamlit run app2.py
-```
+streamlit run app2.py --server.port 8501 & streamlit run app3.py --server.port 8502
 
+```
