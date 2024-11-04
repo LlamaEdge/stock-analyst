@@ -8,6 +8,6 @@ pip install -r requirements.txt
 ```
 To view the database manager & database manager
 ```
-streamlit run app2.py --server.port 8501 & streamlit run app3.py --server.port 8502
+streamlit run app2.py  & streamlit run app3.py 
 
 ```
