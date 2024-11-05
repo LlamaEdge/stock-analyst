@@ -9,17 +9,22 @@ from utils import (
     decode_blob,
     encode_blob
 )
-
-
-client = openai.OpenAI(base_url="https://llama.us.gaianet.network/v1", api_key="GAIA")
-
+from dotenv import load_dotenv
+load_dotenv('./.env', override=False)
+GAIA_API_KEY = os.getenv("GAIA_API_KEY") or os.environ.get("GAIA_API_KEY")
+GAIA_API_URL = os.getenv("GAIA_API_URL") or os.environ.get("GAIA_API_URL")
+MODEL_NAME = os.getenv("GAIA_MODEL", "llama")  or os.environ.get("GAIA_MODEL", "llama")
+client = openai.OpenAI(
+    base_url=GAIA_API_URL,
+    api_key=GAIA_API_KEY
+)
 def chunk_text(text: str, chunk_size: int = 4000) -> List[str]:
     return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
 
 def get_gaia_summary(text: str) -> str:
     try:
         response = client.chat.completions.create(
-            model="llama", 
+            model=MODEL_NAME, 
             messages=[
                 {"role": "system", "content": "You are a financial document summarizer. Summarize the following text concisely:"},
                 {"role": "user", "content": text}
