@@ -21,9 +21,6 @@ def ensure_parsed_text_column_exists() -> None:
         if not check_column_exists(connection, 'parsed_text', 'sec_filings'):
             create_column('sec_filings', 'parsed_text', 'LONGBLOB', connection)
             # print("'parsed_text' column added to sec_filings table.")
-        else:
-            # print("'parsed_text' column already exists.")
-            pass
     except Exception as e:
         print(f"Error altering the table: {e}")
     finally:
