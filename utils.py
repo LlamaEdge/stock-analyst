@@ -8,11 +8,15 @@ from sec_edgar_downloader._orchestrator import (
 )
 from sec_edgar_downloader._types import DownloadMetadata
 from sec_edgar_downloader._sec_gateway import download_filing
+from dotenv import load_dotenv
+import os
 
-DB_HOST = 'localhost'
-DB_USER = 'root'
-DB_PASSWORD = ''
-DB_NAME = 'sec'
+load_dotenv('./.env', override=False)
+
+DB_HOST = os.environ.get('DB_HOST') or os.getenv('DB_HOST')
+DB_USER = os.environ.get('DB_USER') or os.getenv('DB_USER')
+DB_PASSWORD = os.environ.get('DB_PASSWORD') or os.getenv('DB_PASSWORD')
+DB_NAME = os.environ.get('DB_NAME') or os.getenv('DB_NAME')
 
 def create_database_if_not_exists():
     try:
