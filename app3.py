@@ -11,21 +11,35 @@ from utils import (
     decode_blob,
     update_parsed_text,
     execute_query,
-    DownloadMetadata
+    create_database_if_not_exists,
+    create_table,
+    DownloadMetadata,
 )
+from mysql.connector import Error
 from pathlib import Path
 
 class SECFilingApp:
     def __init__(self):
-        self.connection = self._create_database_connection()
-        self.setup_page_config()
-
-    def _create_database_connection(self):
-        connection = create_database_connection()
-        if not connection:
+        create_database_if_not_exists()
+        self.connection = create_database_connection()
+        if not self.connection:
             st.error("Failed to connect to database. Please check your database configuration.")
             st.stop()
-        return connection
+        table_name = "sec_filings"
+        columns = {
+            'company_identifier': 'VARCHAR(50)',
+            'form': 'VARCHAR(10)',
+            'accession_number': 'VARCHAR(20)',
+            'filing_date': 'DATE',
+            'report_date': 'DATE',
+            'file_url': 'VARCHAR(255)',
+            'content': 'LONGBLOB',
+            'parsed_text': 'LONGBLOB',
+            'cleaned_text': 'LONGBLOB',
+            'summary': 'LONGBLOB'
+        }
+        create_table(table_name, columns, self.connection)
+        self.setup_page_config()
 
     def setup_page_config(self) -> None:
         st.set_page_config(
