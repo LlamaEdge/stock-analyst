@@ -7,8 +7,17 @@ from utils import (
     decode_blob
 )
 from widgets import get_tradingview_widget, get_company_news, get_stock_data, get_full_company_data
+from dotenv import load_dotenv
+import os
+load_dotenv('./.env', override=False)
+GAIANET_API_KEY = os.getenv("GAIANET_API_KEY") or os.environ.get("GAIANET_API_KEY")
+GAIANET_API_URL = os.getenv("GAIANET_API_URL") or os.environ.get("GAIANET_API_URL")
+MODEL_NAME = os.getenv("MODEL_NAME", "llama") or os.environ.get("MODEL_NAME", "llama")
 
-general_client = openai.OpenAI(base_url="https://llama.us.gaianet.network/v1", api_key="GAIA")
+general_client = openai.OpenAI(
+    base_url=GAIANET_API_URL,
+    api_key=GAIANET_API_KEY
+)
 
 st.set_page_config(
     page_title="Financial Analyst",
@@ -98,7 +107,7 @@ def display_stock_info(ticker):
 def process_message(message):
     try:
         general_response = general_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=MODEL_NAME,
             messages=[
                 {"role": "system", "content": st.session_state.current_system_message},
                 {"role": "user", "content": message},
