@@ -10,8 +10,8 @@ from widgets import get_tradingview_widget, get_company_news, get_stock_data, ge
 from dotenv import load_dotenv
 import os
 load_dotenv('./.env', override=False)
-GAIA_API_KEY = os.getenv("GAIANET_API_KEY") or os.environ.get("GAIANET_API_KEY")
-GAIA_API_URL = os.getenv("GAIANET_API_URL") or os.environ.get("GAIANET_API_URL")
+GAIA_API_KEY = os.getenv("GAIA_API_KEY") or os.environ.get("GAIA_API_KEY")
+GAIA_API_URL = os.getenv("GAIA_API_URL") or os.environ.get("GAIA_API_URL")
 MODEL_NAME = os.getenv("MODEL_NAME", "llama") or os.environ.get("MODEL_NAME", "llama")
 
 general_client = openai.OpenAI(
