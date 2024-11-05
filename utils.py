@@ -24,7 +24,6 @@ def create_database_if_not_exists():
         if connection.is_connected():
             cursor = connection.cursor()
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
-            print(f"Database '{DB_NAME}' created or already exists.")
     except Error as e:
         print(f"Error creating database: {e}")
     finally:
@@ -37,7 +36,7 @@ def create_database_connection():
     try:
         connection = mysql.connector.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASSWORD)
         if connection.is_connected():
-            # print(f"Connected to MySQL database '{DB_NAME}'")
+            
          return connection
     except Error as e:
         print(f"Error connecting to MySQL database '{DB_NAME}': {e}")
