@@ -11,6 +11,7 @@ from utils import (
     encode_blob,
     update_parsed_text,
 )
+load_dotenv('./.env', override=False)
 def ensure_parsed_text_column_exists() -> None:
     connection = create_database_connection()
     if not connection:
@@ -45,7 +46,7 @@ def retrieve_and_save_parsed_blob(accession_number: str) -> None:
                 content_parts = [
                     "\n".join(total_lines[i:i + lines_per_part]) for i in range(0, len(total_lines), lines_per_part)
                 ]
-                api_key = os.getenv('LLAMA_CLOUD_API_KEY', 'llx-')
+                api_key = os.environ.get('LLAMA_CLOUD_API_KEY') or os.getenv('LLAMA_CLOUD_API_KEY') 
                 parser = LlamaParse(api_key=api_key, result_type="markdown", show_progress=True)
                 output_file_path = os.path.join(os.path.expanduser('~/Desktop'), f"parsed_output_{accession_number}.txt")
                 with open(output_file_path, 'w', encoding='utf-8') as output_file:
