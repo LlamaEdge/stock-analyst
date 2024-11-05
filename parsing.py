@@ -23,6 +23,7 @@ def ensure_parsed_text_column_exists() -> None:
             # print("'parsed_text' column added to sec_filings table.")
         else:
             # print("'parsed_text' column already exists.")
+            pass
     except Exception as e:
         print(f"Error altering the table: {e}")
     finally:
