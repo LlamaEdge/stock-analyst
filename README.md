@@ -21,3 +21,21 @@ To view the database manager & chatbot
 streamlit run app2.py  & streamlit run app3.py 
 
 ```
+To use docker
+```
+docker build -t sec-filings-app .
+docker run -d \
+    --name sec-filings-app \
+    -p 8501:8501 \
+    -p 8502:8502 \
+    -e DB_HOST=host.docker.internal \
+    -e DB_USER=root \
+    -e DB_PASSWORD= \
+    -e DB_NAME=sec \
+    -e LLAMA_CLOUD_API_KEY=llx- \
+    -e GAIA_API_KEY=GAIA \
+    -e GAIA_API_URL=https://llama.us.gaianet.network/v1 \
+    -e MODEL_NAME=llama \
+    sec-filings-app
+
+```
