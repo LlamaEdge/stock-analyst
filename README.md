@@ -15,6 +15,7 @@ export LLAMA_CLOUD_API_KEY=llama_cloud_api_key
 export GAIA_API_KEY=gaia_api_key
 export GAIA_API_URL=gaia_api_url
 export MODEL_NAME=llama
+export TAVILY_API_KEY=tavily_api_key
 ```
 To view the database manager & chatbot 
 ```
@@ -36,6 +37,7 @@ docker run -d \
     -e GAIA_API_KEY=GAIA \
     -e GAIA_API_URL=https://llama.us.gaianet.network/v1 \
     -e MODEL_NAME=llama \
+    -e TAVILY_API_KEY=tavily_api_key
     sec-filings-app
 
 ```
