@@ -12,3 +12,4 @@ requests
 beautifulsoup4
 pandas
 plotly
+tavily-python
