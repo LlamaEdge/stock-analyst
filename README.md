@@ -37,7 +37,7 @@ docker run -d \
     -e GAIA_API_KEY=GAIA \
     -e GAIA_API_URL=https://llama.us.gaianet.network/v1 \
     -e MODEL_NAME=llama \
-    -e TAVILY_API_KEY=tavily_api_key
+    -e TAVILY_API_KEY=tavily_api_key \
     sec-filings-app
 
 ```
