@@ -79,13 +79,23 @@ CRYPTO_TICKERS = {
 def is_crypto_ticker(ticker: str) -> bool:
     return ticker.upper() in CRYPTO_TICKERS
 
-def get_crypto_news(ticker: str, tavily_client, openai_client) -> List[Dict[str, str]]:
-    if not tavily_client:
-        return []
+
+def get_company_news(ticker: str, tavily_client, openai_client) -> list:
+    if st.session_state.news_data:
+        return st.session_state.news_data
     
     try:
-        crypto_name = CRYPTO_TICKERS.get(ticker.upper(), ticker)
-        search_query = f"{crypto_name} cryptocurrency latest news price analysis"
+        if not tavily_client:
+            return []
+        
+        # Determine the search query based on ticker
+        if is_crypto_ticker(ticker):
+            crypto_name = CRYPTO_TICKERS.get(ticker.upper(), ticker)
+            search_query = f"{crypto_name} cryptocurrency latest news price analysis"
+        else:
+            search_query = f"{ticker} company latest news financial analysis"
+        
+        # Perform Tavily search
         search_response = tavily_client.search(
             query=search_query,
             search_depth="advanced",
@@ -94,6 +104,7 @@ def get_crypto_news(ticker: str, tavily_client, openai_client) -> List[Dict[str,
         
         if not search_response or "results" not in search_response:
             return []
+        
         processed_articles = []
         for result in search_response["results"]:
             content = result.get("content", "Content not available")
@@ -108,38 +119,9 @@ def get_crypto_news(ticker: str, tavily_client, openai_client) -> List[Dict[str,
                 "scraped_at": datetime.now().isoformat()
             })
         
-        return processed_articles
-    except Exception as e:
-        print(f"Error fetching crypto news for {ticker}: {str(e)}")
-        return []
-
-def get_company_news(ticker: str, tavily_client, openai_client) -> list:
-    if st.session_state.news_data:
-        return st.session_state.news_data
-    if is_crypto_ticker(ticker):
-        articles = get_crypto_news(ticker, tavily_client, openai_client)
-        st.session_state.news_data = articles
-        return articles
-    
-    try:
-        stock = yf.Ticker(ticker)
-        news = stock.news
-        article_urls = [article.get("link") for article in news[:5] if article.get("link")]
-        articles_content = fetch_article_content_with_tavily(article_urls, tavily_client)
-        processed_articles = []
-        for i, article in enumerate(news[:5]):
-            content = articles_content[i]["raw_content"] if i < len(articles_content) else "Content not available"
-            summary = summarize_content(content, openai_client)
-            processed_articles.append({
-                "title": article.get("title", "No title"),
-                "publisher": article.get("publisher", "Unknown"),
-                "link": article.get("link", "#"),
-                "content": content,
-                "summary": summary,
-                "scraped_at": datetime.now().isoformat()
-            })
         st.session_state.news_data = processed_articles
         return processed_articles
+    
     except Exception as e:
         print(f"Error fetching news for {ticker}: {str(e)}")
         return []
