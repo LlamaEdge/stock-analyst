@@ -1,4 +1,4 @@
-# LFX-Updates
+# Stock-Analyst
 
 ```
 git clone https://github.com/lazyperson1020/LFX-Updates.git
