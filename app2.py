@@ -419,7 +419,7 @@ if ticker := st.session_state.get("selected_ticker"):
                         key=f"ta_{key}"
                     )
                     if st.button("Use This Summary", key=f"btn_{key}"):
-                        update_system_message(summary=filing['summary'])
+                        update_system_message(summary=f['summary'])
                         st.success("Summary selected!")
         else:
             st.info(f"No SEC filings found for {ticker}")
