@@ -76,26 +76,18 @@ CRYPTO_TICKERS = {
     "UNI": "Uniswap"
 }
 
-def is_crypto_ticker(ticker: str) -> bool:
-    return ticker.upper() in CRYPTO_TICKERS
-
-
 def get_company_news(ticker: str, tavily_client, openai_client) -> list:
     if st.session_state.news_data:
         return st.session_state.news_data
     
+    if not tavily_client:
+        return []
+    
     try:
-        if not tavily_client:
-            return []
+        search_query = (f"{CRYPTO_TICKERS.get(ticker.upper(), ticker)} cryptocurrency latest news price analysis" 
+                       if ticker.upper() in CRYPTO_TICKERS else 
+                       f"{ticker} company latest news financial analysis")
         
-        # Determine the search query based on ticker
-        if is_crypto_ticker(ticker):
-            crypto_name = CRYPTO_TICKERS.get(ticker.upper(), ticker)
-            search_query = f"{crypto_name} cryptocurrency latest news price analysis"
-        else:
-            search_query = f"{ticker} company latest news financial analysis"
-        
-        # Perform Tavily search
         search_response = tavily_client.search(
             query=search_query,
             search_depth="advanced",
@@ -105,23 +97,19 @@ def get_company_news(ticker: str, tavily_client, openai_client) -> list:
         if not search_response or "results" not in search_response:
             return []
         
-        processed_articles = []
-        for result in search_response["results"]:
-            content = result.get("content", "Content not available")
-            summary = summarize_content(content, openai_client) if openai_client else "Summary not available"
-            
-            processed_articles.append({
-                "title": result.get("title", "No title"),
-                "publisher": result.get("source", "Unknown"),
-                "link": result.get("url", "#"),
-                "content": content,
-                "summary": summary,
-                "scraped_at": datetime.now().isoformat()
-            })
+        processed_articles = [{
+            "title": result.get("title", "No title"),
+            "publisher": result.get("source", "Unknown"),
+            "link": result.get("url", "#"),
+            "content": result.get("content", "Content not available"),
+            "summary": summarize_content(result.get("content", "Content not available"), openai_client) 
+                      if openai_client else "Summary not available",
+            "scraped_at": datetime.now().isoformat()
+        } for result in search_response["results"]]
         
         st.session_state.news_data = processed_articles
         return processed_articles
-    
+        
     except Exception as e:
         print(f"Error fetching news for {ticker}: {str(e)}")
         return []
