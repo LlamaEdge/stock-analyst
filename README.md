@@ -1,8 +1,8 @@
 # Stock-Analyst
 
 ```
-git clone https://github.com/lazyperson1020/LFX-Updates.git
-cd LFX-Updates
+git clone https://github.com/LlamaEdge/stock-analyst.git
+cd stock-analyst
 pip install -r requirements.txt
 ```
 Set env variables
