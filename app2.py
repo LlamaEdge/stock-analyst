@@ -404,10 +404,21 @@ if ticker := st.session_state.get("selected_ticker"):
             st.info("News already loaded. Interact with the chatbot or view other sections.")
         filings = get_sec_filings_for_ticker(ticker)
         if filings:
-            for filing in filings:
-                with st.expander(f"{filing['form']} - {filing['filing_date']}"):
-                    st.text_area("Summary", filing.get('summary', 'No summary available'), height=150, disabled=True)
-                    if st.button("Use This Summary", key=f"summary_{filing['accession_number']}"):
+            seen = {}
+            for f in filings:
+                num = f['accession_number']
+                seen[num] = seen.get(num, 0) + 1
+                key = f"{num}_{seen[num]}"
+                
+                with st.expander(f"{f['form']} - {f['filing_date']}"):
+                    st.text_area(
+                        "Summary",
+                        f.get('summary', 'No summary available'),
+                        height=150,
+                        disabled=True,
+                        key=f"ta_{key}"
+                    )
+                    if st.button("Use This Summary", key=f"btn_{key}"):
                         update_system_message(summary=filing['summary'])
                         st.success("Summary selected!")
         else:
