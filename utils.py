@@ -14,13 +14,14 @@ import os
 load_dotenv('./.env', override=False)
 
 DB_HOST = os.environ.get('DB_HOST') or os.getenv('DB_HOST')
+DB_PORT = os.environ.get('DB_PORT') or os.getenv('DB_PORT', '3306') 
 DB_USER = os.environ.get('DB_USER') or os.getenv('DB_USER')
 DB_PASSWORD = os.environ.get('DB_PASSWORD') or os.getenv('DB_PASSWORD')
 DB_NAME = os.environ.get('DB_NAME') or os.getenv('DB_NAME')
 
 def create_database_if_not_exists():
     try:
-        connection = mysql.connector.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD)
+        connection = mysql.connector.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASSWORD)
         if connection.is_connected():
             cursor = connection.cursor()
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
@@ -34,7 +35,7 @@ def create_database_if_not_exists():
 
 def create_database_connection():
     try:
-        connection = mysql.connector.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASSWORD)
+        connection = mysql.connector.connect(host=DB_HOST, port=DB_PORT, database=DB_NAME, user=DB_USER, password=DB_PASSWORD)
         if connection.is_connected():
             
          return connection

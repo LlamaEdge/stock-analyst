@@ -1,13 +1,14 @@
-# LFX-Updates
+# Stock-Analyst
 
 ```
-git clone https://github.com/lazyperson1020/LFX-Updates.git
-cd LFX-Updates
+git clone https://github.com/LlamaEdge/stock-analyst.git
+cd stock-analyst
 pip install -r requirements.txt
 ```
 Set env variables
 ```
 export DB_HOST=localhost
+export DB_PORT=
 export DB_USER=root
 export DB_PASSWORD=
 export DB_NAME=
@@ -30,6 +31,7 @@ docker run -d \
     -p 8501:8501 \
     -p 8502:8502 \
     -e DB_HOST=host.docker.internal \
+    -e DB_PORT= \
     -e DB_USER=root \
     -e DB_PASSWORD= \
     -e DB_NAME=sec \
