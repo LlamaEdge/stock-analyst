@@ -10,8 +10,8 @@ tiktoken
 requests
 beautifulsoup4
 pandas
-plotly
 tavily-python
 aiohttp
 aiohttp-cors
 uvicorn
+yfinance
