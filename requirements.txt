@@ -5,7 +5,6 @@ llama-parse
 sec-edgar-downloader
 sec-downloader
 streamlit
-yfinance
 openai
 tiktoken
 requests
@@ -13,3 +12,6 @@ beautifulsoup4
 pandas
 plotly
 tavily-python
+aiohttp
+aiohttp-cors
+uvicorn
