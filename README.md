@@ -48,5 +48,5 @@ export TAVILY_API_KEY=tavily_api_key
 To start the database manager and chatbot 
 
 ```
-streamlit run app2.py  & streamlit run app3.py 
+streamlit run app2.py  & streamlit run app3.py & python api.py
 ```
