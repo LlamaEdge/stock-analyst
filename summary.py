@@ -4,20 +4,22 @@ from typing import List, Optional
 import openai
 from utils import (
     create_database_connection,
-    handle_error,
     check_column_exists,
     decode_blob,
     encode_blob
 )
 from dotenv import load_dotenv
+
 load_dotenv('./.env', override=False)
 GAIA_API_KEY = os.getenv("GAIA_API_KEY") or os.environ.get("GAIA_API_KEY")
 GAIA_API_URL = os.getenv("GAIA_API_URL") or os.environ.get("GAIA_API_URL")
 MODEL_NAME = os.getenv("GAIA_MODEL", "llama")  or os.environ.get("GAIA_MODEL", "llama")
+
 client = openai.OpenAI(
     base_url=GAIA_API_URL,
     api_key=GAIA_API_KEY
 )
+
 def chunk_text(text: str, chunk_size: int = 4000) -> List[str]:
     return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
 
@@ -34,7 +36,7 @@ def get_gaia_summary(text: str) -> str:
         )
         return response.choices[0].message.content
     except Exception as e:
-        handle_error(f"Error in GaiaNet API call: {e}")
+        print(f"Error in GaiaNet API call: {e}")
         return ""
 
 def summarize_filing(accession_number: str) -> Optional[bytes]:
@@ -55,14 +57,18 @@ def summarize_filing(accession_number: str) -> Optional[bytes]:
                 print(f"No cleaned content found for accession number: {accession_number}")
                 return None
             cleaned_content_blob = result[0]
+        
         cleaned_content = decode_blob(cleaned_content_blob)
         chunks = chunk_text(cleaned_content)
         summaries = []
+        
         for chunk in chunks:
             summary = get_gaia_summary(chunk)
             summaries.append(summary)
+            
         final_summary = " ".join(summaries)
         summary_blob = encode_blob(final_summary)
+        
         with connection.cursor() as cursor:
             cursor.execute("UPDATE sec_filings SET summary = %s WHERE accession_number = %s", 
                            (summary_blob, accession_number))
@@ -72,8 +78,7 @@ def summarize_filing(accession_number: str) -> Optional[bytes]:
         return summary_blob
 
     except Exception as e:
-        handle_error(f"Error summarizing filing: {e}")
+        print(f"Error summarizing filing: {e}")
         return None
     finally:
         connection.close()
-

@@ -20,7 +20,9 @@ RUN mkdir -p /tmp/downloads
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-EXPOSE 8501 8502
+EXPOSE 8501 8502 8503
 
 CMD streamlit run app2.py --server.port=8501 --server.address=0.0.0.0 & \
-    streamlit run app3.py --server.port=8502 --server.address=0.0.0.0
+    streamlit run app3.py --server.port=8502 --server.address=0.0.0.0 & \
+    python api.py & \
+    wait
